@@ -7,6 +7,10 @@
 #include <XteinkDetect.h>
 #include <esp_sleep.h>
 
+#if FREEINK_DEVICE_LILYGO
+#include <BoardT5S3.h>
+#endif
+
 // Global HalGPIO instance
 HalGPIO gpio;
 
@@ -105,6 +109,13 @@ void HalGPIO::begin() {
   _deviceType = DeviceType::X4;
 #endif
   inputMgr.begin();
+#if FREEINK_DEVICE_LILYGO
+  // T5S3 IO48 key sits behind the PCA9535 expander. Mirrors BoardT5S3::begin(), which also
+  // re-inits I2C/SPI and is unsafe to call here. inputMgr.begin() has started Wire.
+  BoardT5S3::setPca9535PinMode(PCA9535_IO12_BUTTON, INPUT);
+  InputManager::setButtonHook(
+      []() -> uint8_t { return BoardT5S3::readButton() ? static_cast<uint8_t>(1U << InputManager::BTN_DOWN) : 0; });
+#endif
 }
 
 void HalGPIO::update() {
