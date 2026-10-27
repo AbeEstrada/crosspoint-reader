@@ -148,6 +148,9 @@ bool HalGPIO::wasAnyReleased() const { return inputMgr.wasAnyReleased(); }
 
 bool HalGPIO::rawInputActive() {
   if (inputMgr.isPowerButtonPhysicallyPressed()) return true;
+#if FREEINK_DEVICE_LILYGO
+  if (BoardConfig::ACTIVE.board == BoardConfig::Board::LilyGoT5S3 && BoardT5S3::readButton()) return true;
+#endif
   InputManager::ButtonAdcSample g1{}, g2{};
   inputMgr.readButtonAdc(g1, g2);
   // The Xteink ladder idles at the ADC full-scale rail (~4095); every button band sits below 3900.
